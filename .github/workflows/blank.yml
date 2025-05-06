@@ -1,0 +1,32 @@
+name: Sync Repos
+
+on:
+  repository_dispatch:
+    types: [sync-repo]  # Evento disparado pelo repositório X
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Faz checkout do repositório Y
+      - name: Checkout Repository Y
+        uses: actions/checkout@v4  # Usando a versão mais recente do checkout
+
+      # Passo 2: Sincronizar com o repositório X
+      - name: Sync with Repository X
+        env:
+          REPO_X: 'https://github.com/Hexcold/repx.git'  # URL do repositório X
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token de autenticação
+        run: |
+          # Adiciona o repositório X como remoto
+          git remote add repo-x $REPO_X
+
+          # Puxa as últimas alterações da branch master do repositório X
+          git fetch repo-x master
+
+          # Faz o merge das alterações do repositório X na branch master do repositório Y
+          git merge repo-x/master --allow-unrelated-histories -m "Sync with master branch of repx"
+
+          # Empurra as mudanças para o repositório Y
+          git push origin master
